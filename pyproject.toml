@@ -1,0 +1,20 @@
+[project]
+name = "generador_ideas_crew"
+version = "0.1.0"
+description = "generador_ideas_crew using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<=3.13"
+dependencies = [
+    "crewai[tools]>=0.80.0,<1.0.0"
+]
+
+[project.scripts]
+generador_ideas_crew = "generador_ideas_crew.main:run"
+run_crew = "generador_ideas_crew.main:run"
+train = "generador_ideas_crew.main:train"
+replay = "generador_ideas_crew.main:replay"
+test = "generador_ideas_crew.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

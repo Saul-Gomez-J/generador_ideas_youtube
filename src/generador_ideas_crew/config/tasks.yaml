@@ -1,0 +1,182 @@
+filter_comments_task:
+  description: >
+    Identificar y filtrar comentarios útiles que puedan servir como ideas para videos.
+    El objetivo es conservar solo los comentarios que puedan inspirar contenido nuevo,
+    especialmente solicitudes, sugerencias o preguntas directamente relacionadas con los temas de los videos.
+    Aquí hay algunos ejemplos para guiarte:
+
+    Entrada:
+    [
+      [
+        "video_title": "Curso Rápido de CrewAI Flows",
+        "comment": "¿Podrías mostrar cómo usar Flows con RAG?",
+        "video_id": "123",
+        "comment_id": "abc"
+      ],
+      [
+        "video_title": "Curso Rápido de CrewAI Flows",
+        "comment": "Esto es oro, ¡te amo, amigo!",
+        "video_id": "123",
+        "comment_id": "xyz"
+      ],
+      [
+        "video_title": "Curso Rápido de CrewAI Flows",
+        "comment": "¡Gracias por el excelente contenido! ¡No pares!",
+        "video_id": "123",
+        "comment_id": "xyz"
+      ]
+    ]
+
+    En este ejemplo, solo el primer comentario debería ser seleccionado, ya que representa una solicitud para un nuevo video.
+    Los demás comentarios son positivos, pero no son útiles para crear contenido nuevo.
+    Además, filtra comentarios de spam o irrelevantes.
+    Asegúrate de que los comentarios sean únicos y no duplicados.
+    Por último, verifica que el comentario pueda ser una idea potencial para un video.
+
+    Aquí están los comentarios que necesitas analizar:
+    {comments}
+
+  expected_output: >
+    Devuelve un array de comentarios útiles, cada uno con los siguientes campos:
+    - video_title
+    - comment
+    - video_id
+    - comment_id
+
+    Ejemplo de Salida:
+    [
+      [
+        "video_title": "Curso Rápido de CrewAI Flows",
+        "comment": "¿Podrías mostrar cómo usar Flows con RAG?",
+        "video_id": "123",
+        "comment_id": "abc"
+      ]
+    ]
+  agent: comment_filter_agent
+
+generate_video_ideas_task:
+  description: >
+    Convierte cada comentario útil en una idea para video con un título y una descripción estructurados.
+    Incluye los detalles del comentario original como referencia.
+
+    Ejemplo de Entrada:
+    [
+      [
+        "video_title": "Curso Rápido de CrewAI Flows",
+        "comment": "¿Podrías mostrar cómo usar Flows con RAG?",
+        "video_id": "123",
+        "comment_id": "abc"
+      ]
+    ]
+
+    A partir de esta entrada, genera un título y una descripción que guíen la creación del video.
+
+  expected_output: >
+    Cada comentario útil debe transformarse en un objeto que contenga:
+    - video_title: Un título descriptivo para la idea del video.
+    - description: Un breve resumen explicando de qué tratará el video.
+    - video_id: El video_id original de la entrada.
+    - comment_id: El comment_id original de la entrada.
+
+    Ejemplo de Salida:
+    [
+      [
+        "video_title": "Curso Rápido de CrewAI Flows con RAG",
+        "description": "En este tutorial, aprenderás cómo usar RAG dentro de tus flows.",
+        "video_id": "123",
+        "comment_id": "abc"
+      ]
+    ]
+  agent: video_idea_generator_agent
+
+research_video_ideas_task:
+  description: >
+    Realiza una investigación en YouTube para identificar videos similares basados en el título de cada idea de video.
+    Para cada idea de video generada, busca en YouTube y recopila detalles sobre videos comparables,
+    incluyendo el título, la URL y el número de vistas de cada video relacionado.
+
+    Ejemplo de Entrada:
+    [
+      [
+        "video_title": "Curso Rápido de CrewAI Flows con RAG",
+        "description": "En este tutorial, aprenderás cómo usar RAG dentro de tus flows.",
+        "video_id": "123",
+        "comment_id": "abc"
+      ]
+    ]
+
+    Investiga en YouTube este título de video y recopila información sobre videos similares.
+
+  expected_output: >
+    Enriquece cada idea de video con un campo "research" que incluya un array de videos relevantes de YouTube
+    en el siguiente formato:
+
+    - title: Título de un video similar.
+    - url: Enlace directo al video similar.
+    - view_count: Número de vistas del video similar.
+
+    Ejemplo de Salida:
+    [
+      [
+        "video_title": "Curso Rápido de CrewAI Flows con RAG",
+        "description": "En este tutorial, aprenderás cómo usar RAG dentro de tus flows.",
+        "video_id": "123",
+        "comment_id": "abc",
+        "research": [
+          [
+            "title": "Cómo usar herramientas RAG en CrewAI",
+            "url": "https://youtube.com/123",
+            "view_count": 23456
+          ]
+        ]
+      ]
+    ]
+  agent: research_agent
+
+score_video_ideas_task:
+  description: >
+    Asigna una puntuación entre 1 y 10 a cada idea de video basada en los datos de investigación existentes.
+    Los videos con altos números de vistas en los datos de investigación deben recibir una puntuación más alta,
+    indicando un fuerte interés del mercado, mientras que las ideas con pocos números de vistas deben recibir puntuaciones más bajas.
+
+    Ejemplo de Entrada:
+    [
+      [
+        "video_title": "Curso Rápido de CrewAI Flows con RAG",
+        "description": "En este tutorial, aprenderás cómo usar RAG dentro de tus flows.",
+        "video_id": "123",
+        "comment_id": "abc",
+        "research": [
+          [
+            "title": "Cómo usar herramientas RAG en CrewAI",
+            "url": "https://youtube.com/123",
+            "view_count": 23456
+          ]
+        ]
+      ]
+    ]
+
+    Calcula una puntuación basada en las métricas de número de vistas y añádela a cada idea de video.
+
+  expected_output: >
+    Cada idea de video debe incluir ahora:
+    - score: Un valor entre 1 y 10 que represente la popularidad potencial de la idea.
+
+    Ejemplo de Salida:
+    [
+      [
+        "score": 7,
+        "video_title": "Curso Rápido de CrewAI Flows con RAG",
+        "description": "En este tutorial, aprenderás cómo usar RAG dentro de tus flows.",
+        "video_id": "123",
+        "comment_id": "abc",
+        "research": [
+          [
+            "title": "Cómo usar herramientas RAG en CrewAI",
+            "url": "https://youtube.com/123",
+            "view_count": 23456
+          ]
+        ]
+      ]
+    ]
+  agent: scoring_agent
